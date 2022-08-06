@@ -4,6 +4,10 @@ Shadow caster 2D based on [javidx9](https://www.youtube.com/watch?v=fc3nnG2CG8U&
 C++ implementation. For more information behind the math check out [redblobgames article](https://www.redblobgames.com/articles/visibility/)
 and/or [Nicky Case's](https://ncase.me/sight-and-light/) article.
 
+
+## Controls
+Use WASD to move and press the right mouse button to cast light.
+
 ## Dependencies
 Build and install [raylib](https://github.com/raysan5/raylib).
 
