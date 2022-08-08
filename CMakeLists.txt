@@ -4,6 +4,7 @@ project(shadow_cast)
 find_package(raylib 3.0 REQUIRED) # Requires at least version 3.0
 find_package(glfw3 3.3 REQUIRED)
 
+add_definitions("-O3")
 
 set(CMAKE_C_STANDARD 11) # Requires C11 standard
 
