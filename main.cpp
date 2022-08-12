@@ -84,6 +84,9 @@ void drawLines(Vector2 lightPos)
         {
             DrawLine(lightPos.x, lightPos.y, mworld.points[i].x, 
                 std::min(mworld.points[i].y, mworld.points[i+1].y) + off, WHITE);
+            
+            DrawCircle(mworld.points[i].x, 
+                std::min(mworld.points[i].y, mworld.points[i+1].y) + off, 3.0f, WHITE);
         }
         else if (std::abs(mworld.points[i].y - mworld.points[i+1].y) < 0.1)
         for (float off=step; off < std::abs(mworld.points[i].x - mworld.points[i+1].x); off+=step)
@@ -91,6 +94,9 @@ void drawLines(Vector2 lightPos)
             DrawLine(lightPos.x, lightPos.y,
                 std::min(mworld.points[i].x, mworld.points[i+1].x) + off, 
                 mworld.points[i].y, WHITE);
+            
+            DrawCircle(std::min(mworld.points[i].x, mworld.points[i+1].x) + off, 
+                mworld.points[i].y, 3.0f, WHITE);
         }
     }
 
@@ -101,6 +107,9 @@ void drawLines(Vector2 lightPos)
     {
         DrawLine(lightPos.x, lightPos.y, mworld.points[0].x, 
             std::min(mworld.points[0].y, mworld.points[i].y) + off, WHITE);
+
+        DrawCircle(mworld.points[0].x, 
+                std::min(mworld.points[0].y, mworld.points[i].y) + off, 3.0f, WHITE);
     }
     else if (std::abs(mworld.points[0].y - mworld.points[i].y) < 0.1)
     for (float off=step; off < std::abs(mworld.points[0].x - mworld.points[i].x); off+=step)
@@ -108,6 +117,9 @@ void drawLines(Vector2 lightPos)
         DrawLine(lightPos.x, lightPos.y,
             std::min(mworld.points[0].x, mworld.points[i].x) + off, 
             mworld.points[0].y, WHITE);
+
+        DrawCircle(std::min(mworld.points[0].x, mworld.points[i].x) + off, 
+                mworld.points[0].y, 3.0f, WHITE);
     }
 }
 
@@ -140,13 +152,6 @@ void drawLight(Vector2 lightPos)
 
 void drawWorld(float fBlockWidth, float rectHeight, Vector2 lightPos, bool bdrawLines)
 {
-    
-    if (!mworld.points.empty())
-    {
-        if (bdrawLines) drawLines(lightPos);
-        else drawLight(lightPos);
-    }
-
 
     // Draw Blocks from TileMap
     for (int x = 0; x < mworld.nWorldWidth; x++)
@@ -155,6 +160,12 @@ void drawWorld(float fBlockWidth, float rectHeight, Vector2 lightPos, bool bdraw
             if (mworld.world[y * mworld.nWorldWidth + x].exist)
                 DrawRectangle(x * fBlockWidth, y * fBlockWidth, fBlockWidth, fBlockWidth, BLUE);
         }
+
+    if (!mworld.points.empty())
+    {
+        if (bdrawLines) drawLines(lightPos);
+        else drawLight(lightPos);
+    }
 
     // Draw Edges from PolyMap
     for (auto &e : mworld.edges)
