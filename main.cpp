@@ -72,43 +72,79 @@ struct World
 } mworld;
 
 
+void drawLines(Vector2 lightPos)
+{
+    for (size_t i = 0; i < mworld.points.size() - 1; i++)
+    {
+        float step = 5;
+        DrawLine(lightPos.x, lightPos.y, mworld.points[i].x, mworld.points[i].y, WHITE);
 
-void drawWorld(float fBlockWidth, float rectHeight, Vector2 lightPos, bool drawLight)
+        if (std::abs(mworld.points[i].x - mworld.points[i+1].x) < 0.1)
+        for (float off=step; off < std::abs(mworld.points[i].y - mworld.points[i+1].y); off+=step)
+        {
+            DrawLine(lightPos.x, lightPos.y, mworld.points[i].x, 
+                std::min(mworld.points[i].y, mworld.points[i+1].y) + off, WHITE);
+        }
+        else if (std::abs(mworld.points[i].y - mworld.points[i+1].y) < 0.1)
+        for (float off=step; off < std::abs(mworld.points[i].x - mworld.points[i+1].x); off+=step)
+        {
+            DrawLine(lightPos.x, lightPos.y,
+                std::min(mworld.points[i].x, mworld.points[i+1].x) + off, 
+                mworld.points[i].y, WHITE);
+        }
+    }
+
+    float step = 5;
+    int i = mworld.points.size() - 1;
+    if (std::abs(mworld.points[0].x - mworld.points[i].x) < 0.1)
+    for (float off=step; off < std::abs(mworld.points[0].y - mworld.points[i].y); off+=step)
+    {
+        DrawLine(lightPos.x, lightPos.y, mworld.points[0].x, 
+            std::min(mworld.points[0].y, mworld.points[i].y) + off, WHITE);
+    }
+    else if (std::abs(mworld.points[0].y - mworld.points[i].y) < 0.1)
+    for (float off=step; off < std::abs(mworld.points[0].x - mworld.points[i].x); off+=step)
+    {
+        DrawLine(lightPos.x, lightPos.y,
+            std::min(mworld.points[0].x, mworld.points[i].x) + off, 
+            mworld.points[0].y, WHITE);
+    }
+}
+
+
+void drawLight(Vector2 lightPos)
+{
+    // draw light
+    for (size_t i = 0; i < mworld.points.size() - 1; i++)
+    {
+        // raylib wants the triangle points in counter clockwise order
+        DrawTriangle(lightPos,
+        {mworld.points[i].x, mworld.points[i].y}, 
+        {mworld.points[i + 1].x, mworld.points[i + 1].y}, WHITE);
+
+        DrawTriangle(lightPos, 
+        {mworld.points[i + 1].x, mworld.points[i + 1].y},
+        {mworld.points[i].x, mworld.points[i].y}, WHITE);
+    }
+
+    
+    // last point
+    DrawTriangle(lightPos, 
+        {mworld.points[0].x, mworld.points[0].y}, 
+        {mworld.points[mworld.points.size() - 1].x, mworld.points[mworld.points.size() - 1].y}, WHITE);
+    DrawTriangle(lightPos, 
+        {mworld.points[mworld.points.size() - 1].x, mworld.points[mworld.points.size() - 1].y}, 
+        {mworld.points[0].x, mworld.points[0].y}, WHITE);
+}
+
+
+void drawWorld(float fBlockWidth, float rectHeight, Vector2 lightPos, bool bdrawLines)
 {
     
-    if (!mworld.points.empty() && drawLight)
+    if (!mworld.points.empty())
     {
-        // draw light
-        for (size_t i = 0; i < mworld.points.size() - 1; i++)
-        {
-            // raylib wants the triangle points in counter clockwise order
-            DrawTriangle(lightPos,
-                {mworld.points[i].x,
-				 mworld.points[i].y}, 
-
-                {mworld.points[i + 1].x,
-				 mworld.points[i + 1].y}, WHITE);
-
-            DrawTriangle(lightPos, 
-                {mworld.points[i + 1].x,
-				 mworld.points[i + 1].y},
-
-                {mworld.points[i].x,
-				 mworld.points[i].y}, WHITE);
-        }
-
-        
-        // last point
-        DrawTriangle(lightPos, 
-            {mworld.points[0].x,
-			 mworld.points[0].y}, 
-            {mworld.points[mworld.points.size() - 1].x,
-			 mworld.points[mworld.points.size() - 1].y}, WHITE);
-        DrawTriangle(lightPos, 
-            {mworld.points[mworld.points.size() - 1].x,
-			 mworld.points[mworld.points.size() - 1].y}, 
-            {mworld.points[0].x,
-			 mworld.points[0].y}, WHITE);
+        if (bdrawLines) drawLines(lightPos);
+        else drawLight(lightPos);
     }
 
 
@@ -322,9 +358,10 @@ void CalculateVisibilityPolygon(float ox, float oy, float radius)
 
                     if (fabs(sdx - rdx) > 0.0f && fabs(sdy - rdy) > 0.0f)
                     {
-                        // t2 is normalised distance from line segment start to line segment end of intersect point
+                        // t2 is normalized distance from line segment start to 
+                        // line segment end of intersect point
                         float t2 = (rdx * (e2.sy - oy) + (rdy * (ox - e2.sx))) / (sdx * rdy - sdy * rdx);
-                        // t1 is normalised distance from source along ray to ray length of intersect point
+                        // t1 is normalized distance from source along ray to ray length of intersect point
                         float t1 = (e2.sx + sdx * t2 - ox) / rdx;
 
                         // If intersect point exists along ray, and along line 
@@ -407,32 +444,32 @@ int main()
         if (IsKeyDown(KEY_A)) mworld.lightPos.x -= speed * timing.dt;
         if (IsKeyDown(KEY_W)) mworld.lightPos.y -= speed * timing.dt;
         if (IsKeyDown(KEY_S)) mworld.lightPos.y += speed * timing.dt;
-        
+
         if (lastLightPos.x != mworld.lightPos.x || lastLightPos.y != mworld.lightPos.y)
             CalculateVisibilityPolygon(mworld.lightPos.x, mworld.lightPos.y, 1000.0f);
 
+        bool bdrawLines = !IsKeyDown(KEY_LEFT_SHIFT);
+
         // toggle new tile
-        if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+        if (IsMouseButtonDown(MOUSE_BUTTON_LEFT))
         {
             int x = GetMouseX() / mworld.fBlockWidth;
             int y = GetMouseY() / mworld.fBlockWidth;
             int i = y * mworld.nWorldWidth + x;
-            mworld.world[i].exist = !mworld.world[i].exist;
+            mworld.world[i].exist = !IsKeyDown(KEY_LEFT_CONTROL);
 
             ConvertTileMapToPolyMap(mworld.nWorldWidth, mworld.nWorldHeight, 
                 mworld.fBlockWidth, mworld.nWorldWidth);
             CalculateVisibilityPolygon(mworld.lightPos.x, mworld.lightPos.y, 1000.0f);
         }
 
-        bool drawLight = IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
-
         // Draw
         //----------------------------------------------------------------------------------
         BeginDrawing();
 
             ClearBackground(BLACK);
-            
-            drawWorld(mworld.fBlockWidth, mworld.fBlockWidth, mworld.lightPos, drawLight);
+
+            drawWorld(mworld.fBlockWidth, mworld.fBlockWidth, mworld.lightPos, bdrawLines);
             DrawCircleV(mworld.lightPos, 10.0f, RED);
 
             DrawText((std::string("FPS ") + std::to_string(1.0 / timing.dt)).c_str(),
